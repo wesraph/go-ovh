@@ -76,6 +76,16 @@ type Client struct {
 	Timeout        time.Duration
 }
 
+// HTTPError is an http error
+type HTTPError struct {
+	Err        error
+	StatusCode int
+}
+
+func (h *HTTPError) Error() string {
+	return h.Error()
+}
+
 // NewClient represents a new client to call the API
 func NewClient(endpoint, appKey, appSecret, consumerKey string) (*Client, error) {
 	client := Client{
@@ -386,7 +396,10 @@ func (c *Client) CallAPIWithContext(ctx context.Context, method, path string, re
 	req = req.WithContext(ctx)
 	response, err := c.Do(req)
 	if err != nil {
-		return err
+		return &HTTPError{
+			Err:        err,
+			StatusCode: response.StatusCode,
+		}
 	}
 	return c.UnmarshalResponse(response, resType)
 }
